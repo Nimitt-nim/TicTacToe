@@ -5,24 +5,222 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tic Tac Toe</title>
-    <link rel="stylesheet" href="style.css"> <!-- Link to your external CSS file -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #3498db;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .tit {
+            font-size: 36px;
+            color: #191918;
+        }
+
+        #board {
+            display: grid;
+            grid-template-columns: repeat(3, 120px);
+            gap: 20px;
+            margin: 20px auto;
+        }
+
+        .cell {
+            width: 120px;
+            height: 120px;
+            font-size: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f3e40b;
+            color: rgb(50, 45, 45);
+            border: 2px solid #333;
+            cursor: pointer;
+        }
+
+        .fancy-button {
+            background-color: rgb(50, 45, 45);
+            color: #f3e40b;
+            border: none;
+            padding: 20px 40px;
+            border-radius: 5px;
+            box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            cursor: pointer;
+        }
+
+        .fancy-button:hover {
+            background-color: rgb(50, 45, 45);
+            transform: scale(1.05);
+        }
+
+        .fancy-button:active {
+            background-color: rgb(50, 45, 45);
+            transform: scale(0.95);
+        }
+        #message{
+            font-size: 48;
+        }
+    </style>
 </head>
 <body>
-    <br><br><br><br><br><br>
-    <h1>TIC TAC TOE</h1>
+    <br>
+    <div class="tit"><h1>TIC TAC TOE</h1></div>
     <div id="board">
-        <div class="cell" onclick="makemove(0)"></div>
-        <div class="cell" onclick="makemove(1)"></div>
-        <div class="cell" onclick="makemove(2)"></div>
-        <div class="cell" onclick="makemove(3)"></div>
-        <div class="cell" onclick="makemove(4)"></div>
-        <div class="cell" onclick="makemove(5)"></div>
-        <div class="cell" onclick="makemove(6)"></div>
-        <div class="cell" onclick="makemove(7)"></div>
-        <div class="cell" onclick="makemove(8)"></div>
+        <div class="cell" onclick="main(0)"></div>
+        <div class="cell" onclick="main(1)"></div>
+        <div class="cell" onclick="main(2)"></div>
+        <div class="cell" onclick="main(3)"></div>
+        <div class="cell" onclick="main(4)"></div>
+        <div class="cell" onclick="main(5)"></div>
+        <div class="cell" onclick="main(6)"></div>
+        <div class="cell" onclick="main(7)"></div>
+        <div class="cell" onclick="main(8)"></div>
     </div>
     <p id="message"></p>
-    <button class='fancy-button' onclick="reset()">RESET</button>
-    <script src="script.js"></script>
+    <button class='fancy-button' onclick="reset()">Start Again</button>
+    <script>
+        let current = 'X';
+        let board = ["", "", "", "", "", "", "", "", ""]; 
+        let gameActive = true;
+
+        class Move{
+            constructor(){
+                this.index;
+                this.score;
+            }
+        }
+
+        function checkWin(player) {
+            const winningCombos = [
+                [0, 1, 2],
+                [3, 4, 5],
+                [6, 7, 8],
+                [0, 3, 6],
+                [1, 4, 7],
+                [2, 5, 8],
+                [0, 4, 8],
+                [2, 4, 6]
+            ];
+            return winningCombos.some(combo =>
+                combo.every(index => board[index] === player)
+            );
+        }
+
+        function main(index) {
+            console.log(board);
+            if (gameActive && board[index] === "") {
+                board[index] = current;
+                document.getElementsByClassName('cell')[index].innerText = current;
+                if (checkWin(current)){
+                    document.getElementById('message').innerText = `${current} wins`;
+                    gameActive = false;
+                }else if (board.indexOf('') === -1) {
+                    document.getElementById('message').innerText = "It's a draw!";
+                    gameActive = false;
+                }
+                else{
+                current = otherplayer(current);
+                m = bestmove(current);
+                console.log(m.index);
+                makemove(m.index,current);
+                if (checkWin(current)){
+                    document.getElementById('message').innerText = `${current} wins`;
+                    gameActive = false;
+                }else if (board.indexOf('') === -1) {
+                    document.getElementById('message').innerText = "It's a draw!";
+                    gameActive = false;
+                }
+                current = otherplayer(current);
+                }
+            }
+        }
+
+        function otherplayer(current){
+            return (current === 'X') ? 'O' : 'X';
+        }
+
+        function makemove(index, curr){
+            board[index] = curr;
+            document.getElementsByClassName('cell')[index].innerText = curr;
+        }
+        function undomove(index){
+            board[index] = '';
+            document.getElementsByClassName('cell')[index].innerText = '';
+        }
+
+        function isFull(){
+            if (board.indexOf('') === -1) {
+                return true;
+            }else{
+                return false;
+            }
+        }
+
+        function bestmove(current){
+            let move = new Move;
+            let i = 0;
+            while (i < 9){
+                if (board[i] === ''){
+                    makemove(i, current);
+                    if (checkWin(current)){
+                        undomove(i);
+                        move.score = 1;
+                        move.index = i;
+                        return move;
+                    }
+                    undomove(i);
+                }
+                i = i + 1;
+            }
+            let nocandidate = true;
+            i = 0 
+            while (i < 9){
+                if (board[i] === ''){
+                    makemove(i, current);
+                    let response = bestmove(otherplayer(current));
+                    undomove(i);
+                    if (isFull()){
+                        move.index = i;
+                        move.score = 0;
+                        return move;
+                    }
+                    if (response.score === -1){
+                        move.index = i;
+                        move.score = 1;
+                        return move;
+                    }
+                    else if (response.score === 0){
+                        move.index = i;
+                        move.score = 0;
+                        nocandidate = false;
+                    }
+                    else{
+                        if (nocandidate){
+                            move.index = i;
+                            move.score = -1;
+                        }
+                    }
+                }
+                i = i + 1;
+            }
+            return move;
+        }
+
+        function reset() {
+            gameActive = true;
+            current = 'X';
+            board = ["", "", "", "", "", "", "", "", ""];
+            document.getElementById('message').innerText = '';
+            const cells = document.getElementsByClassName('cell');
+            for (let cell of cells) {
+                cell.innerText = ''; 
+            }
+        }
+    </script>
 </body>
 </html>
